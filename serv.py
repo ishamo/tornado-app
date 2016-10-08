@@ -8,10 +8,14 @@ import route
 
 def main():
     application = tornado.web.Application(
-            route.handlers,
+            handlers = route.handlers,
+            template_path = os.path.join(os.path.dirname(__file__), 'template'),
+            static_path = os.path.join(os.path.dirname(__file__), 'static'),
+            debug = True
             )
     application.listen(8888)
     tornado.ioloop.IOLoop.instance().start()
+
 
 
 if __name__ == "__main__":
