@@ -4,22 +4,32 @@
 import tornado.web
 
 class BaseHandler(tornado.web.RequestHandler):
-    def get(self):
+    def get_current_user():
         pass
+
+class MainHandler(BaseHandler):
+    def get(self):
+        self.render('index.html')
+
     def post(self):
         pass
+
+
 
 class SignupHandler(BaseHandler):
     def post(self):
         pass
 
+
 class SigninHandler(BaseHandler):
     def post(self):
         pass
 
+
 class SignoutHandler(BaseHandler):
     def get(self):
         pass
+
 
 
 
@@ -29,3 +39,4 @@ handlers = [
         (r'/signin', SigninHandler),
         (r'/signout', SignoutHandler),
 ]
+
