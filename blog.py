@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+
 import bcrypt
-import concurretn.futures
+import concurrent.futures
 import MySQLdb
 import markdown
 import os.path
@@ -12,7 +13,7 @@ import torndb
 import tornado.escape
 from tornado import gen
 import tornado.httpserver
-from tornado.ioloop
+import tornado.ioloop
 import tornado.options
 import tornado.web
 import unicodedata
@@ -27,6 +28,7 @@ define("mysql_password", default="blog", help="blog database password")
 
 executor = concurrent.futures.ThreadPoolExecutor(2)
 
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -34,22 +36,22 @@ class Application(tornado.web.Application):
                 (r"/archive", ArchiveHandler),
                 (r"/feed", FeedHandler),
                 (r"/entry/([^/]+)", EntryHandler),
-                (r"/compose", ComposeHandler),
+                (r"/compose", ComposeHnadler),
                 (r"/auth/create", AuthCreateHandler),
                 (r"/auth/login", AuthLoginHandler),
                 (r"/auth/logout", AuthLogoutHandler),
         ]
         settings = dict(
                 blog_title=u"Tornado Blog",
-                template_path = os.path.join(os.path.dirname(__file__), "templates"),
-                static_path = os.path.join(os.path.dirname(__file__), "static"),
+                template_path=os.path.join(os.path.dirname(__file__), "templates"),
+                static_path=os.path.join(os.path.dirname(__file__), "static"),
                 ui_modules={"Entry": EntryModule},
                 xsrf_cookies=True,
                 cookie_secret="411444270345370dfbb49c29a0f1e3ce",
-                login_url = "/auth/login",
+                login_url="/auth/login",
                 debug=True,
         )
-        super(Application, self).__init__(handlers, **setttings)
+        super(Application, self).__init__(handlers, **settings)
 
         self.db = torndb.Connection(
                 host=options.mysql_host, database=options.mysql_database,
@@ -82,6 +84,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def any_author_exists(self):
         return bool(self.db.get("SELECT * FROM authors LIMIT 1"))
 
+
 class HomeHandler(BaseHandler):
     def get(self):
         entries = self.db.query("SELECT * FROM entries ORDER BY published "
@@ -91,24 +94,28 @@ class HomeHandler(BaseHandler):
             return
         self.render("home.html", entries=entries)
 
+
 class EntryHandler(BaseHandler):
     def get(self, slug):
         entry = self.db.get("SELECT * FROM entries WHERE slug = %s", slug)
         if not entry: raise tornado.web.HTTPError(404)
         self.render("entry.html", entry=entry)
 
+
 class ArchiveHandler(BaseHandler):
     def get(self):
         entries = self.db.query("SELECT * FROM entries ORDER BY published "
                                 "DESC")
-        self.render("archive.html", entries=enries)
+        self.render("archive.html", entries=entries)
+
 
 class FeedHandler(BaseHandler):
     def get(self):
         entries = self.db.query("SELECT * FROM entries ORDER BY published "
                                 "DESC LIMIT 10")
         self.set_header("Content-Type", "application/atom+xml")
-        self.render("feed.xml", entries = entries)
+        self.render("feed.xml", entries=entries)
+
 
 class ComposeHnadler(BaseHandler):
     @tornado.web.authenticated
@@ -144,9 +151,9 @@ class ComposeHnadler(BaseHandler):
                 slug += "-2"
             self.db.execute(
                     "INSERT INTO entries (author_id, title, slug, markdown, html, "
-                    "published) VALUES (%s, %s, %s, %s, %s, UTC_TIMESTAMP())", 
+                    "published) VALUES (%s, %s, %s, %s, %s, UTC_TIMESTAMP())",
                     self.current_user.id, title, slug, text, html)
-        self.redirect("/entry/" + slug) 
+        self.redirect("/entry/" + slug)
 
 
 class AuthCreateHandler(BaseHandler):
@@ -168,6 +175,7 @@ class AuthCreateHandler(BaseHandler):
         self.set_secure_cookie("blogdemo_user", str(author_id))
         self.redirect(self.get_argument("next", "/"))
 
+
 class AuthLoginHandler(BaseHandler):
     def get(self):
         if not self.any_author_exists():
@@ -177,7 +185,7 @@ class AuthLoginHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        author = self.db.get("SELECT * FROM authors WHERE email = %s", 
+        author = self.db.get("SELECT * FROM authors WHERE email = %s",
                             self.get_argument("email"))
         if not author:
             self.render("login.html", error="email not found")
@@ -190,12 +198,13 @@ class AuthLoginHandler(BaseHandler):
             self.redirect(self.get_argument("next", "/"))
         else:
             self.render("login.html", error="incorrenct password")
-            
+
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.crear_cookie("blogdemo_user")
         self.redirect(self.get_argument("next", "/"))
+
 
 class EntryModule(tornado.web.UIModule):
     def render(self, entry):
@@ -211,6 +220,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
