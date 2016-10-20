@@ -3,9 +3,11 @@
 
 import tornado.web
 
+
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user():
         pass
+
 
 class MainHandler(BaseHandler):
     def get(self):
@@ -13,7 +15,6 @@ class MainHandler(BaseHandler):
 
     def post(self):
         pass
-
 
 
 class SignupHandler(BaseHandler):
@@ -31,6 +32,19 @@ class SignoutHandler(BaseHandler):
         pass
 
 
+class EntityHandler(BaseHandler):
+    def get(self):
+        pass
+
+
+class ArchiveHandler(BaseHandler):
+    def get(self):
+        pass
+
+
+class AtomHandler(BaseHandler):
+    def get(self):
+        pass
 
 
 handlers = [
@@ -39,4 +53,3 @@ handlers = [
         (r'/signin', SigninHandler),
         (r'/signout', SignoutHandler),
 ]
-
